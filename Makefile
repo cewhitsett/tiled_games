@@ -24,8 +24,6 @@ format_fix:
 apidoc:
 		sphinx-apidoc -o docs/source/ tiled_tools
 
-# This project uses a virtual environment to manage dependencies,
-# but this may be useful for some contexts
 .PHONY: requirements
 requirements:
 		pip freeze > requirements.txt
