@@ -128,14 +128,7 @@ class TestGridGenerator(snapshottest.TestCase):
 class TestMatrixGrid(snapshottest.TestCase):
     # Not actually a class, but a grid with a numeric underlying list
     def setUp(self):
-        self.initial_list = np.array(
-            [
-                [1, 0, 0],
-                [0, 2, 0],
-                [0, 0, 3],
-                [0, 0, 4],
-            ]
-        )
+        self.initial_list = np.array([[1, 0, 0], [0, 2, 0], [0, 0, 3], [0, 0, 4],])
         self.g = Grid(self.initial_list)
 
     def test_get_adjacent_coords(self):

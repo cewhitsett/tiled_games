@@ -14,11 +14,11 @@ help:
 # to look into
 .PHONY: format
 format:
-		black --check tiled_tools tests --exclude 'test/snapshots/*.py'
+		black --check tiled_tools tests
 
 .PHONY: format_fix
 format_fix:
-		black tiled_tools tests --exclude 'test/snapshots/*.py'
+		black tiled_tools tests
 
 # Builds initial RST files for doc site, does not overwrite existing files
 apidoc:
