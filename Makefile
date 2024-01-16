@@ -34,12 +34,19 @@ requirements:
 install_requirements:
 		pip install -r requirements.txt
 
+.PHONY: snapshots
+snapshots:
+		nosetests --snapshot-update
+		make format_fix
+
+# Make sure code is formatted before running tests,
+# useful for CI/CD
 .PHONY: test
 test: format
 		python -m unittest -v tests/test_*.py
 
-# Does not run format before running tests and does not run
-# tests in verbose mode
+# Run tests without formatting and not in verbose mode,
+# useful for local development/unit testing
 .PHONY: test_light
 test_light:
 		python -m unittest tests/test_*.py
