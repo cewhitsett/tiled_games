@@ -14,11 +14,18 @@ help:
 # to look into
 .PHONY: format
 format:
-		black --check tiled_tools tests --exclude 'test/snapshots/*.py'
+		black --check tiled_tools tests
+
+# Or use script
+.PHONY: lint
+lint:
+		pylint tiled_tools --rcfile=.pylintrc
+		pylint tests --rcfile=.pylintrc_test --ignore-paths="tests/snapshots"
 
 .PHONY: format_fix
 format_fix:
-		black tiled_tools tests --exclude 'test/snapshots/*.py'
+		isort --profile black tiled_tools tests scripts
+		black tiled_tools tests
 
 # Builds initial RST files for doc site, does not overwrite existing files
 apidoc:
@@ -32,22 +39,35 @@ requirements:
 install_requirements:
 		pip install -r requirements.txt
 
-.PHONY: snapshots
-snapshots:
-		nosetests --snapshot-update
-		make format_fix
-
-# Make sure code is formatted before running tests,
-# useful for CI/CD
-.PHONY: test
-test: format
-		python -m unittest -v tests/test_*.py
-
 # Run tests without formatting and not in verbose mode,
 # useful for local development/unit testing
 .PHONY: test_light
 test_light:
 		python -m unittest tests/test_*.py
+
+# Make sure code is formatted before running tests,
+# useful for CI/CD
+.PHONY: test
+test: format_fix
+		python -m unittest -v tests/test_*.py
+
+.PHONY: test_full
+test_full:
+		make lint
+		make format
+		make coverage
+
+coverage:
+		coverage run --source=tiled_tools -m unittest tests/test_*.py
+		$(if $(format), coverage $(format), coverage report -m)
+
+coverage_clean:
+		coverage erase
+		rm coverage_pretty.json
+
+erase:
+		coverage erase
+		make clean
 
 # Catch-all target: route all unknown targets to Sphinx using the new
 # "make mode" option.  $(O) is meant as a shortcut for $(SPHINXOPTS).

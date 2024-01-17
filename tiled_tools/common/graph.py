@@ -1,5 +1,11 @@
+"""
+Classes, services and functions for working with graphs,
+nodes and edges.
+"""
+
 from numbers import Number
 from typing import Optional
+
 import numpy as np
 
 from .constants import ALPHABET, ID_SIZE
@@ -10,24 +16,33 @@ class Node:
     A node is a point in a graph.
     """
 
-    def __init__(self, value=None, id: str = ""):
-        if id == "":
-            self.id = "".join(np.random.choice(ALPHABET, size=ID_SIZE))
+    def __init__(self, value=None, ident: str = ""):
+        # This is helpful for search, but not necessary and there are no
+        # restrictions on the ID being unique if you set it yourself.
+        if ident == "":
+            self._id = "".join(np.random.choice(ALPHABET, size=ID_SIZE))
         else:
-            self.id = id
+            self._id = ident
 
         self.value = value
 
-    def __str__(self):
+    @property
+    def id(self) -> str:
+        """
+        Unique identifier for the node, for use in search.
+        """
+        return self._id
+
+    def __repr__(self) -> str:
         return f"Node({self.value}, {self.id})"
 
-    def __repr__(self):
-        return str(self)
+    def __str__(self):
+        return self.__repr__()
 
     def __eq__(self, other: "Node"):
         return self.value == other.value
 
-    def __hash__(self):
+    def __hash__(self) -> int:
         return hash(self.id)
 
 
@@ -37,22 +52,33 @@ class Edge:
     """
 
     def __init__(
-        self, node1: Node, node2: Optional[Node], length: Number, id: str = ""
+        self, node1: Node, node2: Optional[Node], length: Number, ident: str = ""
     ):
-        if id == "":
-            self.id = np.random.choice(ALPHABET, size=ID_SIZE)
+        if ident == "":
+            self._id = np.random.choice(ALPHABET, size=ID_SIZE)
         else:
-            self.id = id
+            self._id = ident
 
         self.node1 = node1
         self.node2 = node2
         self.length = length
 
-    def __str__(self):
+    @property
+    def id(self) -> str:
+        """
+        Unique identifier for the edge, for use in search.
+        """
+        return self._id
+
+    def __repr__(self) -> str:
         return f"Edge({self.node1}, {self.node2}, {self.length}, {self.id})"
 
-    def __repr__(self):
-        return str(self)
+    def __str__(self):
+        return self.__repr__()
+
+    def __hash__(self) -> int:
+        sorted_ids = sorted([self.node1.id, self.node2.id])
+        return hash((sorted_ids[0], sorted_ids[1]))
 
 
 class Graph:
@@ -61,50 +87,41 @@ class Graph:
     """
 
     def __init__(self):
-        self.edges: dict[tuple[Node, Node], Edge] = {}
+        self.edges: set[Edge] = set([])
 
     def add_edge(self, edge: Edge):
         """
         Add an edge to the graph.
         """
-        self.edges[(edge.node1, edge.node2)] = edge
-        self.edges[(edge.node2, edge.node1)] = edge
-
-    def get_edge(self, node1: Node, node2: Node) -> Optional[Edge]:
-        """
-        Get an edge between two nodes.
-        """
-        return self.edges.get((node1, node2), None)
+        self.edges.add(edge)
 
     def get_edges(self, node: Node) -> list[Edge]:
         """
         Get all edges connected to a node.
         """
-        return [
-            edge
-            for edge in self.edges.values()
-            if edge.node1 == node or edge.node2 == node
-        ]
+        return [edge for edge in self.edges if node in (edge.node1, edge.node2)]
 
-    def get_nodes(self) -> list[Node]:
+    def get_edge(self, ident: str) -> Optional[Edge]:
+        """
+        Get an edge by its id, if it exists.
+        """
+        return next((edge for edge in self.edges if edge.id == ident), None)
+
+    def get_nodes(self) -> set[Node]:
         """
         Get all nodes in the graph.
         """
-        return list(
-            set(
-                [
-                    node
-                    for edge in self.edges.values()
-                    for node in [edge.node1, edge.node2]
-                ]
-            )
+        all_nodes = set(
+            node for edge in self.edges for node in [edge.node1, edge.node2]
         )
 
-    def get_node(self, id: str) -> Optional[Node]:
+        return all_nodes
+
+    def get_node(self, ident: str) -> Optional[Node]:
         """
         Get a node by its id.
         """
-        return next((node for node in self.get_nodes() if node.id == id), None)
+        return next((node for node in self.get_nodes() if node.id == ident), None)
 
     def get_neighbors(self, node: Node) -> list[Node]:
         """
@@ -113,5 +130,5 @@ class Graph:
         return [
             edge.node2
             for edge in self.get_edges(node)
-            if edge.node1 == node or edge.node2 == node
+            if node in (edge.node1, edge.node2)
         ]

@@ -1,4 +1,9 @@
+"""
+A collection of constants used throughout the project.
+"""
+
 import string
+
 import numpy as np
 
 ID_SIZE = 16

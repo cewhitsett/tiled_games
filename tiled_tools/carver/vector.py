@@ -1,8 +1,11 @@
-# Helpful classes for vector math
+"""
+Helpful class for Vector and matrix operations.
+"""
 
-from typing import Union
-import numpy as np
 from numbers import Number
+from typing import Union
+
+import numpy as np
 
 
 class Vector:
@@ -138,12 +141,6 @@ class Vector:
 
         return Vector(self.vector // other.vector)
 
-    def __sum__(self) -> Number:
-        """
-        Return the sum of the vector.
-        """
-        return np.sum(self.vector)
-
     def angle_between(self, other: "Vector") -> Number:
         """
         Return the angle between this vector and another vector.
@@ -171,8 +168,18 @@ class Vector:
         """
         return self.vector.tolist()
 
+    def __len__(self) -> int:
+        """
+        Return the length of the vector.
+        """
+        return len(self.vector)
+
 
 class VectorGenerator:
+    """
+    Static class for generating vectors, for convenience.
+    """
+
     @staticmethod
     def empty_vector(size: int):
         """
@@ -184,7 +191,7 @@ class VectorGenerator:
         return Vector(np.zeros(size))
 
     @staticmethod
-    def random_vector(size: int, min: Number = 0, max: Number = 1):
+    def random_vector(size: int, min_value: Number = 0, max_value: Number = 1):
         """
         Return a random vector of a given size with values between min and max.
 
@@ -193,7 +200,7 @@ class VectorGenerator:
           min (Number): The minimum value of the vector. Default is 0.
           max (Number): The maximum value of the vector. Default is 1.
         """
-        return Vector(np.random.uniform(min, max, size))
+        return Vector(np.random.uniform(min_value, max_value, size))
 
 
 class Point:
@@ -232,6 +239,10 @@ class Point:
         """
         Return the point as a list.
         """
+        # v_list: list[Number] = self.vector.tolist()
+        # print("UUU")
+        # print(v_list)
+        # return v_list
         return self.vector.tolist()
 
     def __getitem__(self, index: int) -> Number:
@@ -261,9 +272,9 @@ class Point:
           other (Point|Vector): The vector or point to add to this one.
         """
         if isinstance(other, Point):
-            return Point(self.vector + other.vector)
+            return Point([self.vector[i] + other.vector[i] for i in range(0, 3)])
 
-        return Point(self.vector + other)
+        return Point(Vector(self.vector) + other)
 
     def __sub__(self, other: Union["Point", Vector]) -> "Point":
         """
@@ -273,7 +284,9 @@ class Point:
           other (Point|Vector): The vector or point to subtract from this one.
         """
         if isinstance(other, Point):
-            return Point(self.vector - other.vector)
+            return Point(
+                [self.vector[i] - other.vector[i] for i in range(self.dimension())]
+            )
 
         return Point(self.vector - other)
 
