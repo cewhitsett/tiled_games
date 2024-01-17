@@ -22,10 +22,23 @@ python -m pip install --upgrade pip
 make install_requirements
 ```
 
-## Useful commands
+## Useful make commands
+
 - `make html`: generate sphinx documentation
 - `make format`: run black formatter to check for violations
 - `make format_fix`: tun black formatter to correct violation
 - `make test`: run formatter and tests
 - `make test_light`: run only tests
+- `make test_full`: lint, format check, run tests, + coverage
 - `make snapshots`: update test snapshots
+
+
+## Tools Enabled
+
+These are tools the project uses. The Makefile wraps most usage, but using them
+directly is useful as well.
+
+- __coverage__: to determine test coverage
+- __sphinx__: to generate documentation
+- __black__: python formatter
+- __pylint__: python linter
