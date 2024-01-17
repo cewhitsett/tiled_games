@@ -5,6 +5,7 @@ black==23.12.1
 certifi==2023.11.17
 charset-normalizer==3.3.2
 click==8.1.7
+coverage==7.4.0
 dill==0.3.7
 docutils==0.20.1
 exceptiongroup==1.2.0
@@ -28,7 +29,6 @@ pylint==3.0.3
 pytest==7.4.4
 requests==2.31.0
 six==1.16.0
-snapshottest==0.6.0
 snowballstemmer==2.2.0
 Sphinx==7.2.6
 sphinxcontrib-applehelp==1.0.8
