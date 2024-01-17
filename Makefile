@@ -54,6 +54,7 @@ test: format_fix
 .PHONY: test_full
 test_full:
 		make lint
+		make format
 		make coverage
 
 coverage:
