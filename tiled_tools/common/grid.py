@@ -1,11 +1,22 @@
+"""
+The workhorse of the tiled_tools library. This file contains the Grid class,
+which is used to represent a grid of objects in the game. It was designed
+with search in mind, but can also be used as a matrix for other purposes.
+"""
+
 from enum import Enum
-from numbers import Number
 from typing import Any
+
 import numpy as np
 from numpy.typing import ArrayLike
 
 
 class GridType(Enum):
+    """
+    The type of a grid, square or hexagonal. This is used to determine
+    the neighbors of a cell.
+    """
+
     # A square grid
     TABLE = "table"
     # A hexagonal grid, where each cell has at most 6 neighbors
@@ -13,6 +24,11 @@ class GridType(Enum):
 
 
 class WrapDirection(Enum):
+    """
+    The wrap direction of a grid. This is used to determine if the
+    edges of the grid wrap around to the other side.
+    """
+
     NONE = 0
     HORIZONTAL = 1
     VERTICAL = 2
@@ -33,9 +49,11 @@ class Grid:
         """
 
         Args:
-          inital_list (list): A list of lists of objects to initialize the grid with. Height and width are inferred from this list. There are no
+          inital_list (list): A list of lists of objects to initialize the grid with.
+          Height and width are inferred from this list. There are no
           grid_type (GridType): The type of the grid. Default is GridType.TABLE.
-          wrap_direction (WrapDirection): The wrap direction of the grid. Default is WrapDirection.NONE.
+          wrap_direction (WrapDirection): The wrap direction of the grid. Default is
+          WrapDirection.NONE.
         """
 
         self.grid = np.array(inital_list)
@@ -91,9 +109,24 @@ class Grid:
         return self.grid_height
 
     def get(self, col: int, row: int) -> Any:
+        """
+        Get the value of a cell in the grid.
+
+        Args:
+            col (int): The column of the cell to get.
+            row (int): The row of the cell to get.
+        """
         return self.grid[row][col]
 
-    def set(self, col: int, row: int, value):
+    def set(self, col: int, row: int, value: Any):
+        """
+        Set the value of a cell in the grid.
+
+        Args:
+            col (int): The column of the cell to set.
+            row (int): The row of the cell to set.
+            value (Any): The value to set the cell to.
+        """
         self.grid[row][col] = value
 
     def get_adjacent(self, col: int, row: int) -> list[Any]:
@@ -111,7 +144,8 @@ class Grid:
         """
         adjacent_coords = GridHelper.get_neighbor_coords(self.grid_type, col, row)
 
-        # Filter out any coordinates that are out of bounds, or wrap them around if needed
+        # Filter out any coordinates that are out of bounds,
+        # or wrap them around if needed
         return GridHelper.filter_coords(self, adjacent_coords)
 
     def __getitem__(self, index: tuple[int, int]) -> Any:
@@ -168,11 +202,11 @@ class Grid:
         """
         return np.array_equal(self.grid, other.grid)
 
-    def __str__(self):
+    def __repr__(self):
         return str(self.grid)
 
-    def __repr__(self):
-        return str(self)
+    def __str__(self):
+        return self.__repr__()
 
 
 class HexGrid(Grid):
@@ -186,7 +220,12 @@ class HexGrid(Grid):
         super().__init__(inital_list, GridType.HEX, wrap_direction)
 
 
+# pylint: disable=too-few-public-methods
 class GridGenerator:
+    """
+    Helper methods for generating grids.
+    """
+
     @staticmethod
     def identity(
         size: int,
@@ -218,10 +257,8 @@ class GridHelper:
         """
         if grid_type == GridType.TABLE:
             return GridHelper.get_table_relative_coords(col, row)
-        elif grid_type == GridType.HEX:
-            return GridHelper.get_hex_relative_coords(col, row)
-        else:
-            raise ValueError(f"Unknown grid type {grid_type}")
+
+        return GridHelper.get_hex_relative_coords(col, row)
 
     @staticmethod
     def get_table_relative_coords(col: int, row: int):
@@ -261,35 +298,26 @@ class GridHelper:
         return odd_rel if col % 2 == 1 else even_rel
 
     @staticmethod
-    def get_matrix_relative_coords(col: int, row: int):
-        """
-        Return a list of relative coordinates for a matrix grid, which is the same as a grid.
-        """
-        GridHelper.get_table_relative_coords(col, row)
-
-    @staticmethod
     def correct_adjacent_coord(grid: Grid, col: int, row: int) -> tuple[int, int]:
         """
-        Correct any coordinates that are out of bounds, based on the wrap direction of the grid.
+        Correct any coordinates that are out of bounds,
+        based on the wrap direction of the grid.
+
+        Raises:
+            AssertionError: If the grid has no wrap direction
         """
         assert (
             grid.wrap_direction != WrapDirection.NONE
         ), "Cannot correct adjacent coordinates for a grid with no wrap direction"
 
-        if (
-            grid.wrap_direction == WrapDirection.HORIZONTAL
-            or grid.wrap_direction == WrapDirection.TORUS
-        ):
+        if grid.wrap_direction in (WrapDirection.HORIZONTAL, WrapDirection.TORUS):
             # replace -1 col with width - 1, and width with 0
             if col == -1:
                 col = grid.width - 1
             elif col == grid.width:
                 col = 0
 
-        if (
-            grid.wrap_direction == WrapDirection.VERTICAL
-            or grid.wrap_direction == WrapDirection.TORUS
-        ):
+        if grid.wrap_direction in (WrapDirection.VERTICAL, WrapDirection.TORUS):
             # replace -1 row with height - 1, and height with 0
             if row == -1:
                 row = grid.height - 1

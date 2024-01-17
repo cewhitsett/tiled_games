@@ -1,4 +1,7 @@
-# This file will hold information about dimensions and measurements in the game.
+"""
+This file will hold services and functionality around
+dimensions and measurements in the game.
+"""
 
 from numbers import Number
 
@@ -20,7 +23,7 @@ class Size:
 
     def area(self) -> Number:
         """
-        Return the area of the size.
+        Return the area of the size, assuming 2D.
         """
         return self.width * self.height
 

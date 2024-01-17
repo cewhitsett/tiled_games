@@ -1,13 +1,19 @@
-import numpy as np
+# pylint: disable=missing-docstring
+
 import unittest
-import snapshottest
 
-from tiled_tools.carver.vector import Vector, VectorGenerator, Point
+import numpy as np
+
+from tiled_tools.carver.vector import Point, Vector, VectorGenerator
 
 
-class TestVector(snapshottest.TestCase):
+class TestVector(unittest.TestCase):
     def setUp(self):
         pass
+
+    def test_str(self):
+        v = Vector([1, 2, 3])
+        self.assertEqual(str(v), "Vector([1, 2, 3])")
 
     def test_init(self):
         initial_list = [1, 2, 3]
@@ -139,8 +145,18 @@ class TestVector(snapshottest.TestCase):
         v5 = Vector([1, 1, 1])
         self.assertAlmostEqual(v1.angle_between(v5), np.arccos(1 / np.sqrt(3)))
 
+    def test_eq(self):
+        v1 = Vector([1, 2, 3])
+        v2 = Vector([1, 2, 3])
+        self.assertEqual(v1, v2)
 
-class TestVectorGenerator(snapshottest.TestCase):
+        v3 = Vector([4, 5, 6])
+        self.assertNotEqual(v1, v3)
+
+        self.assertEqual(v3, [4, 5, 6])
+
+
+class TestVectorGenerator(unittest.TestCase):
     def setUp(self):
         pass
 
@@ -159,7 +175,7 @@ class TestVectorGenerator(snapshottest.TestCase):
         assert v.magnitude() > 0
 
 
-class TestPoint(snapshottest.TestCase):
+class TestPoint(unittest.TestCase):
     def setUp(self):
         self.p = Point([1, 2, 3])
 
@@ -178,8 +194,29 @@ class TestPoint(snapshottest.TestCase):
 
         self.assertAlmostEqual(origin.distance(trig), 5)
 
+    def test_add(self):
+        p2 = Point([4, 5, 6])
+        p3: Point = self.p + p2
+        self.assertListEqual(p3.tolist(), [5, 7, 9])
+
+        p4 = self.p + Vector([10, 11, 12])
+        self.assertListEqual(p4.tolist(), [11, 13, 15])
+
+    def test_sub(self):
+        p2 = Point([4, 5, 6])
+        p3: Point = self.p - p2
+        self.assertListEqual(p3.tolist(), [-3, -3, -3])
+
+        p4 = self.p - 10
+        self.assertListEqual(p4.tolist(), [-9, -8, -7])
+
     def test_repr(self):
         self.assertEqual(repr(self.p), "Point([1, 2, 3])")
+
+    def test_coords(self):
+        self.assertEqual(self.p.x, 1)
+        self.assertEqual(self.p.y, 2)
+        self.assertEqual(self.p.z, 3)
 
     def test_eq(self):
         p2 = Point([1, 2, 3])
@@ -214,6 +251,9 @@ class TestPoint(snapshottest.TestCase):
 
     def test_tolist(self):
         self.assertListEqual(self.p.tolist(), [1, 2, 3])
+
+    def test_str(self):
+        self.assertEqual(str(self.p), "Point([1, 2, 3])")
 
 
 if __name__ == "__main__":

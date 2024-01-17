@@ -18,7 +18,6 @@ source .venv/bin/activate
 python -m pip install --upgrade pip
 ```
 4. Install requirements 
-
 ```bash
 make install_requirements
 ```
