@@ -1,6 +1,6 @@
 # pylint: disable=too-few-public-methods
 """
-A game of 2048, a tiled game where the purpose
+A generalized game of "2048", a tiled game where the purpose
 is to merge tiles of the same value together, while avoiding
 filling the board. 
 
