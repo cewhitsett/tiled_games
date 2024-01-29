@@ -182,6 +182,14 @@ class Game:
         self.grid = TileHelper.build_grid_with_value(0, self.config.grid_size)
         self.score = 0
 
+        # Useful for UIs, as they get richer information on what happened during a slide
+        self.movement_matrix = [
+            [0 for _i in range(self.config.grid_size)]
+            for _j in range(self.config.grid_size)
+        ]
+        self.latest_spawn_result: Optional[SlideResult] = None
+        self.latest_spawn_locations: list[tuple[int, int]] = []
+
         self.initial_spawn()
 
     def set_tiles(self, new_list: list[list[Tile]]):
@@ -196,10 +204,12 @@ class Game:
         """
         Spawn in the initial tiles and remove game from init mode
         """
+        spawn_locations = []
         for _i in range(self.config.starting_tile_count):
-            self._spawn_new_tile()
+            spawn_locations.append(self._spawn_new_tile())
 
         self.init_mode = False
+        self.latest_spawn_locations = spawn_locations
 
     def play_turn(self, direction: SlideDirection) -> SlideResult:
         """
@@ -211,6 +221,7 @@ class Game:
             return SlideResult.BOARD_FULL
 
         spawn_result = self.spawn_new_tiles()
+        self.latest_spawn_result = spawn_result
         if not spawn_result:
             if self.config.spawn_kill:
                 return SlideResult.SPAWN_KILL
@@ -226,10 +237,6 @@ class Game:
         Args:
             direction: The direction to slide the tiles
         """
-        # if direction in [SlideDirection.UP, SlideDirection.DOWN]:
-        #     self.slide_rows(direction)
-        # else:
-        #     self.slide_columns(direction)
         if direction in [SlideDirection.UP, SlideDirection.DOWN]:
             new_grid_values, movement_matrix = self.slide_each_column(direction)
         else:
@@ -237,6 +244,7 @@ class Game:
 
         new_tiles = [[Tile(value) for value in row] for row in new_grid_values]
         self.set_tiles(new_tiles)
+        self.movement_matrix = movement_matrix
 
         return movement_matrix
 
@@ -317,6 +325,7 @@ class Game:
             else:
                 if new_list[new_index] == 0:
                     new_list[new_index] = l_copy[i]
+                    movement[i] = new_index - i
                 else:
                     new_list[new_index + 1] = l_copy[i]
                     movement[i] = new_index + 1 - i
@@ -324,7 +333,7 @@ class Game:
 
         if direction in [SlideDirection.DOWN, SlideDirection.RIGHT]:
             new_list = new_list[::-1]
-            movement = movement[::-1]
+            movement = [-offset for offset in movement[::-1]]
 
         return new_list, movement
 
@@ -334,11 +343,14 @@ class Game:
         true if all tiles could be placed, false otherwise
         """
         spawned_all = True
+        self.latest_spawn_locations = []
         for _i in range(self.config.spawn_tile_count):
             new_location = self._spawn_new_tile()
 
             if not new_location:
                 return False
+
+            self.latest_spawn_locations.append(new_location)
 
         return spawned_all
 

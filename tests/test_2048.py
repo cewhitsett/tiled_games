@@ -2,7 +2,13 @@
 
 import unittest
 
-from games.twenty_forty_eight.game import Game, GameConfig, SlideDirection, Tile
+from games.twenty_forty_eight.game import (
+    Game,
+    GameConfig,
+    SlideDirection,
+    SlideResult,
+    Tile,
+)
 from tiled_tools.common.grid import Grid
 
 
@@ -126,8 +132,15 @@ class TestGameOperations(unittest.TestCase):
             [0, 0, 0, 0],
             [0, 0, 0, 0],
         ]
+        expected_movement = [
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [0, 0, -1, 0],
+            [-3, -3, 0, -3],
+        ]
         expected_tiled = [[Tile(val) for val in row] for row in expected]
-        self.assertEqual(game.grid, Grid(expected_tiled))
+        self.assertListEqual(game.movement_matrix, expected_movement)
+        self.assertEqual(game.grid, Grid(expected))
 
         game = Game()
         game.set_tiles(self.power_list)
@@ -138,7 +151,14 @@ class TestGameOperations(unittest.TestCase):
             [0, 0, 2, 0],
             [4, 4, 4, 4],
         ]
+        expected_movement = [
+            [3, 3, 2, 3],
+            [0, 0, 0, 0],
+            [0, 0, 1, 0],
+            [0, 0, 0, 0],
+        ]
         expected_tiled = [[Tile(val) for val in row] for row in expected]
+        self.assertListEqual(game.movement_matrix, expected_movement)
         self.assertEqual(game.grid, Grid(expected_tiled))
 
         game = Game()
@@ -150,19 +170,14 @@ class TestGameOperations(unittest.TestCase):
             [0, 0, 0, 4],
             [0, 0, 2, 4],
         ]
-        expected_tiled = [[Tile(val) for val in row] for row in expected]
-        self.assertEqual(game.grid, Grid(expected_tiled))
-
-        game = Game()
-        game.set_tiles(self.power_list)
-        game.slide_tiles(SlideDirection.RIGHT)
-        expected = [
-            [0, 0, 4, 4],
+        expected_movement = [
+            [2, 1, 1, 0],
             [0, 0, 0, 0],
-            [0, 0, 0, 4],
-            [0, 0, 2, 4],
+            [0, 0, 1, 0],
+            [2, 2, 0, 0],
         ]
         expected_tiled = [[Tile(val) for val in row] for row in expected]
+        self.assertListEqual(game.movement_matrix, expected_movement)
         self.assertEqual(game.grid, Grid(expected_tiled))
 
         game = Game()
@@ -174,8 +189,15 @@ class TestGameOperations(unittest.TestCase):
             [4, 0, 0, 0],
             [4, 2, 0, 0],
         ]
+        expected_movement = [
+            [0, -1, -1, -2],
+            [0, 0, 0, 0],
+            [0, 0, -2, 0],
+            [0, -1, 0, -2],
+        ]
         expected_tiled = [[Tile(val) for val in row] for row in expected]
         self.assertEqual(game.grid, Grid(expected_tiled))
+        self.assertListEqual(game.movement_matrix, expected_movement)
 
         game = Game()
         game.set_tiles(self.full_tile_list)
@@ -204,8 +226,22 @@ class TestGameOperations(unittest.TestCase):
             [0, 0, 0, 0],
             [0, 0, 0, 0],
         ]
+        expected_movement = [
+            [1, 0, 0, 0],
+            [0, 0, 1, 0],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+        ]
         expected_tiled = [[Tile(val) for val in row] for row in expected]
         self.assertEqual(game.grid, Grid(expected_tiled))
+        self.assertListEqual(game.movement_matrix, expected_movement)
+
+    def test_play_turn(self):
+        result = self.game.play_turn(SlideDirection.UP)
+        self.assertEqual(result, SlideResult.NORMAL)
+
+        self.assertTrue(self.game.latest_spawn_locations)
+        self.assertTrue(self.game.latest_spawn_result)
 
 
 class TestTile(unittest.TestCase):
