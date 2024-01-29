@@ -94,6 +94,12 @@ class Grid:
         """
         return [row.tolist() for row in self.grid]
 
+    def copy(self) -> "Grid":
+        """
+        Return a copy of the grid.
+        """
+        return Grid(self.tolist(), self.grid_type, self.wrap_direction)
+
     @property
     def width(self) -> int:
         """
@@ -129,6 +135,30 @@ class Grid:
         """
         self.grid[row][col] = value
 
+    def get_row(self, row: int) -> list[Any]:
+        """
+        Return a list of values in a given row.
+        """
+        return self.grid[row].tolist()
+
+    def get_col(self, col: int) -> list[Any]:
+        """
+        Return a list of values in a given column.
+        """
+        return self.grid[:, col].tolist()
+
+    def set_row(self, row: int, values: list[Any]):
+        """
+        Set the values in a given row.
+        """
+        self.grid[row] = values
+
+    def set_col(self, col: int, values: list[Any]):
+        """
+        Set the values in a given column.
+        """
+        self.grid[:, col] = values
+
     def get_adjacent(self, col: int, row: int) -> list[Any]:
         """
         Return a list of adjacent cells to a given cell.
@@ -147,24 +177,6 @@ class Grid:
         # Filter out any coordinates that are out of bounds,
         # or wrap them around if needed
         return GridHelper.filter_coords(self, adjacent_coords)
-
-    def __getitem__(self, index: tuple[int, int]) -> Any:
-        """
-        Returns the item at the given index.
-
-        Args:
-          index (tuple[int, int]): The item to get, in the for col, row
-        """
-        return self.grid[index[1]][index[0]]
-
-    def __setitem__(self, index: tuple[int, int], value):
-        """
-        Sets the item at the given index.
-
-        Args:
-          index (tuple[int, int]): The item to set, in the for col, row
-        """
-        self.grid[index[1]][index[0]] = value
 
     def __add__(self, other: "Grid") -> "Grid":
         """
@@ -207,6 +219,9 @@ class Grid:
 
     def __str__(self):
         return self.__repr__()
+
+    def __iter__(self):
+        return iter(self.grid)
 
 
 class HexGrid(Grid):

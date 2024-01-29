@@ -11,6 +11,7 @@ Welcome to tiled_games's documentation!
    :caption: Contents:
 
    modules
+   games
 
 
 

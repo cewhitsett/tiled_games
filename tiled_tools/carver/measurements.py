@@ -3,7 +3,7 @@ This file will hold services and functionality around
 dimensions and measurements in the game.
 """
 
-from numbers import Number
+from tiled_tools.common.custom_typing import AnyNumber
 
 
 class Size:
@@ -11,23 +11,23 @@ class Size:
     A size in the game. Base unit does not matter, but assume inches
 
     Args:
-      width (Number): The width of the size.
-      height (Number): The height of the size.
-      depth (Number): The depth of the size. Defaults to 1, which is a 2D size.
+      width (AnyNumber): The width of the size.
+      height (AnyNumber): The height of the size.
+      depth (AnyNumber): The depth of the size. Defaults to 1, which is a 2D size.
     """
 
-    def __init__(self, width: Number, height: Number, depth: Number = 1):
-        self.width: Number = width
-        self.height: Number = height
-        self.depth: Number = depth
+    def __init__(self, width: AnyNumber, height: AnyNumber, depth: AnyNumber = 1):
+        self.width: AnyNumber = width
+        self.height: AnyNumber = height
+        self.depth: AnyNumber = depth
 
-    def area(self) -> Number:
+    def area(self) -> AnyNumber:
         """
         Return the area of the size, assuming 2D.
         """
         return self.width * self.height
 
-    def volume(self) -> Number:
+    def volume(self) -> AnyNumber:
         """
         Return the volume of the size.
         """

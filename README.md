@@ -35,7 +35,7 @@ make install_requirements
 
 ## Tools Enabled
 
-These are tools the project uses. The Makefile wraps most usage, but using them
+These are the tools the project uses. The Makefile wraps most usage, but using them
 directly is useful as well.
 
 - __coverage__: to determine test coverage

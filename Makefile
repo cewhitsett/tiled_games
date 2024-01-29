@@ -14,22 +14,26 @@ help:
 # to look into
 .PHONY: format
 format:
-		black --check tiled_tools tests
+		black --check tiled_tools games tests
 
-# Or use script
+# Or use script.
+# Most type checkers do not do well with "Number", a critical
+# type for the tiled_tools package. This is moreso to do with the fact that
+# Number is a fairly complex type. So, just use it for game classes now
 .PHONY: lint
 lint:
-		pylint tiled_tools --rcfile=.pylintrc
+		pylint tiled_tools games --rcfile=.pylintrc
 		pylint tests --rcfile=.pylintrc_test --ignore-paths="tests/snapshots"
+		pytype games/twenty_forty_eight/game.py
 
 .PHONY: format_fix
 format_fix:
-		isort --profile black tiled_tools tests scripts
-		black tiled_tools tests
+		isort --profile black tiled_tools tests scripts games
+		black tiled_tools tests scripts games
 
 # Builds initial RST files for doc site, does not overwrite existing files
 apidoc:
-		sphinx-apidoc -o docs/source/ tiled_tools
+		sphinx-apidoc -o docs/source/ tiled_tools games
 
 .PHONY: requirements
 requirements:
@@ -53,12 +57,11 @@ test: format_fix
 
 .PHONY: test_full
 test_full:
-		make lint
 		make format
 		make coverage
 
 coverage:
-		coverage run --source=tiled_tools -m unittest tests/test_*.py
+		coverage run --source=tiled_tools,games -m unittest tests/test_*.py
 		$(if $(format), coverage $(format), coverage report -m)
 
 coverage_clean:

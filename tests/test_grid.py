@@ -18,6 +18,24 @@ class TestGrid(unittest.TestCase):
         self.initial_list = [[None for _ in range(3)] for _ in range(4)]
         self.g = Grid(self.initial_list, wrap_direction=WrapDirection.NONE)
 
+    def test_copy(self):
+        self.g.set(0, 0, 1)
+        self.g.set(1, 1, 2)
+        self.g.set(2, 2, 3)
+        self.g.set(2, 3, 4)
+
+        copy = self.g.copy()
+
+        self.assertEqual(copy.get(0, 0), 1)
+        self.assertEqual(copy.get(1, 1), 2)
+        self.assertEqual(copy.get(2, 2), 3)
+        self.assertEqual(copy.get(2, 3), 4)
+
+        self.assertEqual(copy.get_grid_type(), GridType.TABLE)
+        self.assertEqual(copy.get_wrap_direction(), WrapDirection.NONE)
+
+        self.assertEqual(copy, copy.copy())
+
     def test_grid_type(self):
         self.assertEqual(self.g.get_grid_type(), GridType.TABLE)
 
@@ -115,21 +133,10 @@ class TestGrid(unittest.TestCase):
         self.g.set(2, 2, 3)
         self.g.set(2, 3, 4)
 
-        self.assertEqual(self.g[0, 0], 1)
-        self.assertEqual(self.g[1, 1], 2)
-        self.assertEqual(self.g[2, 2], 3)
-        self.assertEqual(self.g[2, 3], 4)
-
-    def test_setitem(self):
-        self.g[0, 0] = 1
-        self.g[1, 1] = 2
-        self.g[2, 2] = 3
-        self.g[2, 3] = 4
-
-        self.assertEqual(self.g[0, 0], 1)
-        self.assertEqual(self.g[1, 1], 2)
-        self.assertEqual(self.g[2, 2], 3)
-        self.assertEqual(self.g[2, 3], 4)
+        self.assertEqual(self.g.grid[0][0], 1)
+        self.assertEqual(self.g.grid[1][1], 2)
+        self.assertEqual(self.g.grid[2][2], 3)
+        self.assertEqual(self.g.grid[3][2], 4)
 
     def test_get_adjacent_coords(self):
         identity = GridGenerator.identity(3)
