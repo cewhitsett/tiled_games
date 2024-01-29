@@ -3,10 +3,11 @@ Classes, services and functions for working with graphs,
 nodes and edges.
 """
 
-from numbers import Number
 from typing import Optional
 
 import numpy as np
+
+from tiled_tools.common.custom_typing import AnyNumber
 
 from .constants import ALPHABET, ID_SIZE
 
@@ -52,7 +53,7 @@ class Edge:
     """
 
     def __init__(
-        self, node1: Node, node2: Optional[Node], length: Number, ident: str = ""
+        self, node1: Node, node2: Optional[Node], length: AnyNumber, ident: str = ""
     ):
         if ident == "":
             self._id = np.random.choice(ALPHABET, size=ID_SIZE)
