@@ -1,8 +1,7 @@
-tiled_tools
+Games
 ===========
 
 .. toctree::
    :maxdepth: 4
 
-   tiled_tools
-
+   games/twenty_forty_eight
