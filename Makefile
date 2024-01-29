@@ -14,7 +14,7 @@ help:
 # to look into
 .PHONY: format
 format:
-		black --check tiled_tools games tests
+		black --check tiled_tools games tests backend
 
 # Or use script.
 # Most type checkers do not do well with "Number", a critical
@@ -29,7 +29,7 @@ lint:
 .PHONY: format_fix
 format_fix:
 		isort --profile black tiled_tools tests scripts games
-		black tiled_tools tests scripts games
+		black tiled_tools tests scripts games backend
 
 # Builds initial RST files for doc site, does not overwrite existing files
 apidoc:

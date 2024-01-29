@@ -5,6 +5,7 @@ import unittest
 from games.twenty_forty_eight.game import (
     Game,
     GameConfig,
+    GameHelper,
     SlideDirection,
     SlideResult,
     Tile,
@@ -256,3 +257,25 @@ class TestTile(unittest.TestCase):
         self.assertEqual(self.tile, 2)
         self.assertNotEqual(self.tile, Tile(4))
         self.assertNotEqual(self.tile, "2")
+
+
+class TestSaveAndLoad(unittest.TestCase):
+    def setUp(self):
+        self.config = GameConfig(grid_size=5, spawn_kill=True)
+        self.game = Game(self.config)
+        self.game_vals = [
+            [0, 2, 4, 0, 16],
+            [0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 8],
+            [8, 0, 0, 0, 0],
+            [0, 0, 0, 0, 2],
+        ]
+        self.game_tiles = [[Tile(val) for val in row] for row in self.game_vals]
+        self.game.set_tiles(self.game_tiles)
+
+    def test_save_and_load(self):
+        save_string = self.game.to_json()
+        loaded_game = GameHelper.load(save_string)
+
+        self.assertEqual(loaded_game.grid, Grid(self.game_tiles))
+        self.assertEqual(loaded_game.to_json(), save_string)
