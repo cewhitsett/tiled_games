@@ -9,11 +9,6 @@ from src.backend.app import app, db
 class TestBackend(unittest.TestCase):
     def setUp(self) -> None:
         app.config["TESTING"] = True
-        self.headers = {
-            "content-type": "application/json",
-            "accept": "application/json",
-        }
-
         with app.app_context():
             db.create_all()
 
@@ -21,7 +16,7 @@ class TestBackend(unittest.TestCase):
 
     def test_new_game_persistence(self):
         response = self.client.get(
-            "/", data=json.dumps({}), content_type="application/json"
+            "/create_game/v1", data=json.dumps({}), content_type="application/json"
         )
         response_dict = response.json
         game_uuid = response_dict["game_uuid"]

@@ -260,7 +260,7 @@ def perform_slide():
 
 
 @app.route("/", methods=["GET"])
-@app.route("/create_game/v1", methods=["POST"])
+@app.route("/create_game/v1", methods=["GET", "POST"])
 def create_game():
     """
     Creates a new game, provided the desired config fields. Each field
