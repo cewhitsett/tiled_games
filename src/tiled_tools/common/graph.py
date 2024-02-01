@@ -7,7 +7,7 @@ from typing import Optional
 
 import numpy as np
 
-from tiled_tools.common.custom_typing import AnyNumber
+from src.tiled_tools.common.custom_typing import AnyNumber
 
 from .constants import ALPHABET, ID_SIZE
 

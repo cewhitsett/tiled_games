@@ -15,8 +15,8 @@ from typing import Any, Optional
 
 import numpy as np
 
-from tiled_tools.common.custom_typing import AnyNumber, is_numeric
-from tiled_tools.common.grid import Grid
+from src.tiled_tools.common.custom_typing import AnyNumber, is_numeric
+from src.tiled_tools.common.grid import Grid
 
 
 # pylint: disable=too-many-instance-attributes
@@ -187,6 +187,18 @@ class ArrayHelper:
         return [list(row) for row in zip(*array)]
 
 
+class PlayBlocker(Enum):
+    """
+    Reasons why a game cannot be played
+    """
+
+    NONE = 0
+    # The board is full
+    BOARD_FULL = 1
+    # No tiles can be merged
+    NO_MERGE = 2
+
+
 class Game:
     """
     All the logic and state for a game of 2048
@@ -198,7 +210,7 @@ class Game:
         self.init_mode = True
 
         self.grid = TileHelper.build_grid_with_value(0, self.config.grid_size)
-        self.score = 0  # TODO: Actually update this
+        self.score = 0
 
         # Useful for UIs, as they get richer information on what happened during a slide
         self.movement_matrix = [
@@ -235,6 +247,7 @@ class Game:
         """
         self.slide_tiles(direction)
 
+        # I don't think this is possible without ending the game
         if self.board_full():
             return SlideResult.BOARD_FULL
 
@@ -247,6 +260,24 @@ class Game:
             return SlideResult.SPAWN_FILL
 
         return SlideResult.NORMAL
+
+    def can_play(self) -> bool:
+        """
+        Returns whether the game can be played
+        """
+
+        # If any tile has a neighbor with the same value, the game can be played
+        for r in range(self.config.grid_size):
+            for c in range(self.config.grid_size):
+                tile = self.grid.get(c, r)
+                if tile.value == 0:
+                    return True
+
+                neighbors = self.grid.get_adjacent(c, r)
+                for neighbor in neighbors:
+                    if neighbor.value == tile.value:
+                        return True
+        return False
 
     def slide_tiles(self, direction: SlideDirection):
         """
@@ -340,6 +371,7 @@ class Game:
                 new_list[new_index] *= self.config.root_tile_value
                 movement[i] = new_index - i
                 new_index += 1
+                self.score += new_list[new_index] * self.config.root_tile_value
             else:
                 if new_list[new_index] == 0:
                     new_list[new_index] = l_copy[i]
@@ -395,6 +427,18 @@ class Game:
                 if self.grid.get(c, r).value == 0:
                     empty_tiles.append((c, r))
         return empty_tiles
+
+    def get_highest_tile(self) -> int:
+        """
+        Returns the value of the highest tile on the board
+        """
+        highest_tile = 0
+        for r in range(self.config.grid_size):
+            for c in range(self.config.grid_size):
+                tile = self.grid.get(c, r)
+                if tile.value > highest_tile:
+                    highest_tile = tile.value
+        return highest_tile
 
     def _spawn_new_tile(self) -> Optional[tuple[int, int]]:
         """
@@ -453,16 +497,20 @@ class Game:
         """
         Converts the game to a json string
         """
-        return json.dumps(
-            {
-                "config": self.config.__dict__,
-                "grid": [[tile.value for tile in row] for row in self.grid.tolist()],
-                "score": self.score,
-                "movement_matrix": self.movement_matrix,
-                "latest_spawn_result": self.latest_spawn_result,
-                "latest_spawn_locations": self.latest_spawn_locations,
-            }
-        )
+        return json.dumps(self.to_dict())
+
+    def to_dict(self) -> dict[str, Any]:
+        """
+        Converts the game to a dict
+        """
+        return {
+            "config": self.config.__dict__,
+            "grid": [[tile.value for tile in row] for row in self.grid.tolist()],
+            "score": self.score,
+            "movement_matrix": self.movement_matrix,
+            "latest_spawn_result": self.latest_spawn_result,
+            "latest_spawn_locations": self.latest_spawn_locations,
+        }
 
     def __repr__(self) -> str:
         tile_matrix = self.grid.tolist()

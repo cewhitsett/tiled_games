@@ -2,7 +2,7 @@
 
 import unittest
 
-from games.twenty_forty_eight.game import (
+from src.games.twenty_forty_eight.game import (
     Game,
     GameConfig,
     GameHelper,
@@ -10,7 +10,7 @@ from games.twenty_forty_eight.game import (
     SlideResult,
     Tile,
 )
-from tiled_tools.common.grid import Grid
+from src.tiled_tools.common.grid import Grid
 
 
 class TestGameConfig(unittest.TestCase):
@@ -24,7 +24,7 @@ class TestGameConfig(unittest.TestCase):
         )
 
 
-class Test2038(unittest.TestCase):
+class Test2048(unittest.TestCase):
     def setUp(self):
         self.game = Game()
         full_config = GameConfig(starting_tile_count=16)
@@ -110,6 +110,24 @@ class TestGameOperations(unittest.TestCase):
         ]
         self.power_list = [[Tile(val) for val in row] for row in self.power_vals]
         # fmt: on
+
+    def test_get_high_tile(self):
+        self.game.set_tiles(self.full_tile_list)
+        self.assertEqual(self.game.get_highest_tile(), 16)
+
+        self.game.set_tiles(self.power_list)
+        self.assertEqual(self.game.get_highest_tile(), 4)
+
+    def test_can_play(self):
+        self.game.set_tiles(self.full_tile_list)
+        self.assertFalse(self.game.can_play())
+
+        self.game.set_tiles(self.power_list)
+        self.assertTrue(self.game.can_play())
+
+        all_twos = [[Tile(2) for _ in range(4)] for _ in range(4)]
+        self.game.set_tiles(all_twos)
+        self.assertTrue(self.game.can_play())
 
     def test_set_tiles(self):
         tile_list = [[Tile(val) for val in row] for row in self.full_tile_vals]

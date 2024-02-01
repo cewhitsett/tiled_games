@@ -4,7 +4,7 @@ import unittest
 
 import numpy as np
 
-from tiled_tools.carver.vector import Vector, VectorGenerator
+from src.tiled_tools.carver.vector import Vector, VectorGenerator
 
 
 class TestVector(unittest.TestCase):
