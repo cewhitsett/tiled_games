@@ -3,6 +3,7 @@ from enum import Enum
 from typing import Optional
 
 from flask import Flask, jsonify, request
+from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import types
 from sqlalchemy.dialects.postgresql import UUID
@@ -17,6 +18,7 @@ from src.games.twenty_forty_eight.game import (
 )
 
 app = Flask(__name__, instance_relative_config=True)
+cors = CORS(app, resources={r"*": {"origins": "*"}})
 
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///backend.db"
 
@@ -163,8 +165,8 @@ def perform_slide():
         - reason: The reason for the result, one of "win", "board_full", "spawn_kill", "spawn_fill".
         - game: The game state after the slide
     """
-    slide_direction: str = request.form.get("slide_direction", type=str, default="")
-    game_uuid: str = request.form.get("game_uuid", type=str, default="")
+    slide_direction: str = request.json.get("slide_direction")
+    game_uuid: str = request.json.get("game_uuid")
 
     if not slide_direction:
         return jsonify({"error": "No slide direction provided"}), 400
@@ -190,6 +192,7 @@ def perform_slide():
         return jsonify({"error": "Game is over"}), 400
 
     result: SlideResult = game_object.game.play_turn(slide_direction)
+    can_play = game_object.game.can_play()
     game_object.save_game()
 
     win_score = game_object.game.config.win_tile_value
@@ -199,6 +202,18 @@ def perform_slide():
                 {
                     "result": "game_over",
                     "reason": "win",
+                    "game": game_object.game.to_dict(),
+                }
+            ),
+            200,
+        )
+
+    if not can_play:
+        return (
+            jsonify(
+                {
+                    "result": "game_over",
+                    "reason": "board_full",
                     "game": game_object.game.to_dict(),
                 }
             ),
@@ -229,12 +244,23 @@ def perform_slide():
                 ),
                 200,
             )
+        else:
+            return (
+                jsonify(
+                    {
+                        "result": "normal",
+                        "reason": result.name,
+                        "game": game_object.game.to_dict(),
+                    }
+                ),
+                200,
+            )
 
     return jsonify({"error": "Could not resolve slide result"}), 500
 
 
 @app.route("/", methods=["GET"])
-@app.route("/create_game/v1", methods=["POST"])
+@app.route("/create_game/v1", methods=["GET", "POST"])
 def create_game():
     """
     Creates a new game, provided the desired config fields. Each field
@@ -258,20 +284,14 @@ def create_game():
         - game_uuid: The UUID of the game that was created
         - game: The game state after the slide
     """
-    grid_size: int = request.args.get("grid_size", type=int, default=4)
-    spawn_tile_count: int = request.args.get("spawn_tile_count", type=int, default=2)
-    starting_tile_count: int = request.args.get(
-        "starting_tile_count", type=int, default=2
-    )
-    win_tile_value: int = request.args.get("win_tile_value", type=int, default=2048)
-    mutation_probability: float = request.args.get(
-        "mutation_probability", type=float, default=0.1
-    )
-    mutation_at_start: bool = request.args.get(
-        "mutation_at_start", type=bool, default=True
-    )
-    spawn_kill: bool = request.args.get("spawn_kill", type=bool, default=False)
-    root_tile_value: int = request.args.get("root_tile_value", type=int, default=2)
+    grid_size: int = request.json.get("grid_size", 4)
+    spawn_tile_count: int = request.json.get("spawn_tile_count", 2)
+    starting_tile_count: int = request.json.get("starting_tile_count", 2)
+    win_tile_value: int = request.json.get("win_tile_value", 2048)
+    mutation_probability: float = request.json.get("mutation_probability", 0.1)
+    mutation_at_start: bool = request.json.get("mutation_at_start", True)
+    spawn_kill: bool = request.json.get("spawn_kill", False)
+    root_tile_value: int = request.json.get("root_tile_value", 2)
 
     game_config = GameConfig(
         grid_size=grid_size,

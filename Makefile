@@ -63,7 +63,7 @@ test_full:
 
 .PHONY: server
 server:
-		flask --app src/backend/app run
+		flask --app src/backend/app run --host="0.0.0.0" --port=5001 --debug
 
 coverage:
 		coverage run --source=src -m unittest tests/**/test_*.py

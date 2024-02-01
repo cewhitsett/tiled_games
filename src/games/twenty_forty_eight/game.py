@@ -371,7 +371,7 @@ class Game:
                 new_list[new_index] *= self.config.root_tile_value
                 movement[i] = new_index - i
                 new_index += 1
-                self.score += new_list[new_index] * self.config.root_tile_value
+                self.score += l_copy[i] * self.config.root_tile_value
             else:
                 if new_list[new_index] == 0:
                     new_list[new_index] = l_copy[i]
