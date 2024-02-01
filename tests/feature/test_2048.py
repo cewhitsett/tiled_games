@@ -34,7 +34,7 @@ class TestBackend(unittest.TestCase):
 
     def test_slide(self):
         response = self.client.get(
-            "/", data=json.dumps({}), content_type="application/json"
+            "/create_game/v1", data=json.dumps({}), content_type="application/json"
         )
         response_dict = response.json
 
