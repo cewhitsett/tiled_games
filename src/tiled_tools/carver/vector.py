@@ -7,7 +7,7 @@ from typing import Union
 
 import numpy as np
 
-from tiled_tools.common.custom_typing import AnyNumber, is_numeric
+from src.tiled_tools.common.custom_typing import AnyNumber, is_numeric
 
 
 class Vector:

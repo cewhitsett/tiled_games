@@ -3,7 +3,7 @@ This file will hold services and functionality around
 dimensions and measurements in the game.
 """
 
-from tiled_tools.common.custom_typing import AnyNumber
+from src.tiled_tools.common.custom_typing import AnyNumber
 
 
 class Size:

@@ -161,7 +161,7 @@ class Grid:
 
     def get_adjacent(self, col: int, row: int) -> list[Any]:
         """
-        Return a list of adjacent cells to a given cell.
+        Return a list of adjacent values to a given cell.
         """
         adjacent_coords = self.get_adjacent_coords(col, row)
 
@@ -170,7 +170,7 @@ class Grid:
 
     def get_adjacent_coords(self, col: int, row: int) -> list[tuple[int, int]]:
         """
-        Return a list of adjacent cells to a given cell.
+        Return a list the adjacent coordinates to a given cell.
         """
         adjacent_coords = GridHelper.get_neighbor_coords(self.grid_type, col, row)
 

@@ -2,7 +2,7 @@
 
 import unittest
 
-from tiled_tools.carver.measurements import Size
+from src.tiled_tools.carver.measurements import Size
 
 
 class TestSize(unittest.TestCase):

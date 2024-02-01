@@ -2,7 +2,7 @@
 
 import unittest
 
-from tiled_tools.common.graph import Edge, Graph, Node
+from src.tiled_tools.common.graph import Edge, Graph, Node
 
 
 class TestNode(unittest.TestCase):

@@ -2,14 +2,15 @@
 
 import unittest
 
-from games.twenty_forty_eight.game import (
+from src.games.twenty_forty_eight.game import (
     Game,
     GameConfig,
+    GameHelper,
     SlideDirection,
     SlideResult,
     Tile,
 )
-from tiled_tools.common.grid import Grid
+from src.tiled_tools.common.grid import Grid
 
 
 class TestGameConfig(unittest.TestCase):
@@ -23,7 +24,7 @@ class TestGameConfig(unittest.TestCase):
         )
 
 
-class Test2038(unittest.TestCase):
+class Test2048(unittest.TestCase):
     def setUp(self):
         self.game = Game()
         full_config = GameConfig(starting_tile_count=16)
@@ -109,6 +110,24 @@ class TestGameOperations(unittest.TestCase):
         ]
         self.power_list = [[Tile(val) for val in row] for row in self.power_vals]
         # fmt: on
+
+    def test_get_high_tile(self):
+        self.game.set_tiles(self.full_tile_list)
+        self.assertEqual(self.game.get_highest_tile(), 16)
+
+        self.game.set_tiles(self.power_list)
+        self.assertEqual(self.game.get_highest_tile(), 4)
+
+    def test_can_play(self):
+        self.game.set_tiles(self.full_tile_list)
+        self.assertFalse(self.game.can_play())
+
+        self.game.set_tiles(self.power_list)
+        self.assertTrue(self.game.can_play())
+
+        all_twos = [[Tile(2) for _ in range(4)] for _ in range(4)]
+        self.game.set_tiles(all_twos)
+        self.assertTrue(self.game.can_play())
 
     def test_set_tiles(self):
         tile_list = [[Tile(val) for val in row] for row in self.full_tile_vals]
@@ -256,3 +275,25 @@ class TestTile(unittest.TestCase):
         self.assertEqual(self.tile, 2)
         self.assertNotEqual(self.tile, Tile(4))
         self.assertNotEqual(self.tile, "2")
+
+
+class TestSaveAndLoad(unittest.TestCase):
+    def setUp(self):
+        self.config = GameConfig(grid_size=5, spawn_kill=True)
+        self.game = Game(self.config)
+        self.game_vals = [
+            [0, 2, 4, 0, 16],
+            [0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 8],
+            [8, 0, 0, 0, 0],
+            [0, 0, 0, 0, 2],
+        ]
+        self.game_tiles = [[Tile(val) for val in row] for row in self.game_vals]
+        self.game.set_tiles(self.game_tiles)
+
+    def test_save_and_load(self):
+        save_string = self.game.to_json()
+        loaded_game = GameHelper.load(save_string)
+
+        self.assertEqual(loaded_game.grid, Grid(self.game_tiles))
+        self.assertEqual(loaded_game.to_json(), save_string)

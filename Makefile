@@ -14,7 +14,7 @@ help:
 # to look into
 .PHONY: format
 format:
-		black --check tiled_tools games tests
+		black --check src
 
 # Or use script.
 # Most type checkers do not do well with "Number", a critical
@@ -22,18 +22,18 @@ format:
 # Number is a fairly complex type. So, just use it for game classes now
 .PHONY: lint
 lint:
-		pylint tiled_tools games --rcfile=.pylintrc
-		pylint tests --rcfile=.pylintrc_test --ignore-paths="tests/snapshots"
-		pytype games/twenty_forty_eight/game.py
+		pylint src --rcfile=.pylintrc
+		pylint tests --rcfile=.pylintrc_test
+		pytype src/games/twenty_forty_eight/game.py
 
 .PHONY: format_fix
 format_fix:
-		isort --profile black tiled_tools tests scripts games
-		black tiled_tools tests scripts games
+		isort --profile black src tests scripts
+		black src tests scripts
 
 # Builds initial RST files for doc site, does not overwrite existing files
 apidoc:
-		sphinx-apidoc -o docs/source/ tiled_tools games
+		sphinx-apidoc -o docs/source/ src/tiled_tools src/games src/backend
 
 .PHONY: requirements
 requirements:
@@ -47,21 +47,26 @@ install_requirements:
 # useful for local development/unit testing
 .PHONY: test_light
 test_light:
-		python -m unittest tests/test_*.py
+		python -m unittest tests/unit/test_*.py
 
 # Make sure code is formatted before running tests,
 # useful for CI/CD
 .PHONY: test
 test: format_fix
-		python -m unittest -v tests/test_*.py
+		python -m unittest -v tests/unit/test_*.py
+		python -m unittest tests/feature/test_*.py
 
 .PHONY: test_full
 test_full:
 		make format
 		make coverage
 
+.PHONY: server
+server:
+		flask --app src/backend/app run
+
 coverage:
-		coverage run --source=tiled_tools,games -m unittest tests/test_*.py
+		coverage run --source=src -m unittest tests/**/test_*.py
 		$(if $(format), coverage $(format), coverage report -m)
 
 coverage_clean:

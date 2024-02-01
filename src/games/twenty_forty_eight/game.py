@@ -7,6 +7,7 @@ filling the board.
 Original: https://play2048.co/
 """
 
+import json
 import random
 from dataclasses import dataclass
 from enum import Enum
@@ -14,8 +15,8 @@ from typing import Any, Optional
 
 import numpy as np
 
-from tiled_tools.common.custom_typing import AnyNumber, is_numeric
-from tiled_tools.common.grid import Grid
+from src.tiled_tools.common.custom_typing import AnyNumber, is_numeric
+from src.tiled_tools.common.grid import Grid
 
 
 # pylint: disable=too-many-instance-attributes
@@ -36,6 +37,23 @@ class GameConfig:
     # Whether to kill the game if a tile is spawned that cannot be placed
     spawn_kill: bool = False
     root_tile_value: int = 2
+
+    def to_json(self) -> str:
+        """
+        Converts the config to a json string
+        """
+        return json.dumps(
+            {
+                "grid_size": self.grid_size,
+                "spawn_tile_count": self.spawn_tile_count,
+                "starting_tile_count": self.starting_tile_count,
+                "win_tile_value": self.win_tile_value,
+                "mutation_probability": self.mutation_probability,
+                "mutation_at_start": self.mutation_at_start,
+                "spawn_kill": self.spawn_kill,
+                "root_tile_value": self.root_tile_value,
+            }
+        )
 
     def __repr__(self) -> str:
         return (
@@ -169,6 +187,18 @@ class ArrayHelper:
         return [list(row) for row in zip(*array)]
 
 
+class PlayBlocker(Enum):
+    """
+    Reasons why a game cannot be played
+    """
+
+    NONE = 0
+    # The board is full
+    BOARD_FULL = 1
+    # No tiles can be merged
+    NO_MERGE = 2
+
+
 class Game:
     """
     All the logic and state for a game of 2048
@@ -217,6 +247,7 @@ class Game:
         """
         self.slide_tiles(direction)
 
+        # I don't think this is possible without ending the game
         if self.board_full():
             return SlideResult.BOARD_FULL
 
@@ -229,6 +260,24 @@ class Game:
             return SlideResult.SPAWN_FILL
 
         return SlideResult.NORMAL
+
+    def can_play(self) -> bool:
+        """
+        Returns whether the game can be played
+        """
+
+        # If any tile has a neighbor with the same value, the game can be played
+        for r in range(self.config.grid_size):
+            for c in range(self.config.grid_size):
+                tile = self.grid.get(c, r)
+                if tile.value == 0:
+                    return True
+
+                neighbors = self.grid.get_adjacent(c, r)
+                for neighbor in neighbors:
+                    if neighbor.value == tile.value:
+                        return True
+        return False
 
     def slide_tiles(self, direction: SlideDirection):
         """
@@ -322,6 +371,7 @@ class Game:
                 new_list[new_index] *= self.config.root_tile_value
                 movement[i] = new_index - i
                 new_index += 1
+                self.score += new_list[new_index] * self.config.root_tile_value
             else:
                 if new_list[new_index] == 0:
                     new_list[new_index] = l_copy[i]
@@ -378,6 +428,18 @@ class Game:
                     empty_tiles.append((c, r))
         return empty_tiles
 
+    def get_highest_tile(self) -> int:
+        """
+        Returns the value of the highest tile on the board
+        """
+        highest_tile = 0
+        for r in range(self.config.grid_size):
+            for c in range(self.config.grid_size):
+                tile = self.grid.get(c, r)
+                if tile.value > highest_tile:
+                    highest_tile = tile.value
+        return highest_tile
+
     def _spawn_new_tile(self) -> Optional[tuple[int, int]]:
         """
         Returns the position of the new tile if config allows it.
@@ -431,6 +493,25 @@ class Game:
 
         return root_tile_value if not should_mutate else mutated_value
 
+    def to_json(self) -> str:
+        """
+        Converts the game to a json string
+        """
+        return json.dumps(self.to_dict())
+
+    def to_dict(self) -> dict[str, Any]:
+        """
+        Converts the game to a dict
+        """
+        return {
+            "config": self.config.__dict__,
+            "grid": [[tile.value for tile in row] for row in self.grid.tolist()],
+            "score": self.score,
+            "movement_matrix": self.movement_matrix,
+            "latest_spawn_result": self.latest_spawn_result,
+            "latest_spawn_locations": self.latest_spawn_locations,
+        }
+
     def __repr__(self) -> str:
         tile_matrix = self.grid.tolist()
         tile_matrix = [[str(tile) for tile in row] for row in tile_matrix]
@@ -438,3 +519,27 @@ class Game:
 
     def __str__(self) -> str:
         return self.__repr__()
+
+
+class GameHelper:
+    """
+    Methods for working with games
+    """
+
+    @staticmethod
+    def load(json_string: str) -> Game:
+        """
+        Load a game from the given json strong
+        """
+        game_dict = json.loads(json_string)
+        config = GameConfig(**game_dict["config"])
+        game = Game(config=config)
+        game.set_tiles(
+            [[Tile(value=value) for value in row] for row in game_dict["grid"]]
+        )
+        game.score = game_dict["score"]
+        game.movement_matrix = game_dict["movement_matrix"]
+        game.latest_spawn_result = game_dict["latest_spawn_result"]
+        game.latest_spawn_locations = game_dict["latest_spawn_locations"]
+
+        return game

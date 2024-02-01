@@ -4,7 +4,7 @@ import unittest
 
 import numpy as np
 
-from tiled_tools.common.grid import (
+from src.tiled_tools.common.grid import (
     Grid,
     GridGenerator,
     GridType,
