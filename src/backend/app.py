@@ -258,6 +258,7 @@ def perform_slide():
 
     return jsonify({"error": "Could not resolve slide result"}), 500
 
+
 @app.route("/create_game/v1", methods=["GET", "POST"])
 def create_game():
     """
